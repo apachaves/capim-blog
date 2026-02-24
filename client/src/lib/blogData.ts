@@ -3126,6 +3126,7 @@ In the words of Whitehead, "The art of progress is to preserve order amid change
 *For those interested in exploring more, I recommend the recent anthology "Process Philosophy and AI Ethics," edited by Lee and Nakamura (2025), which gathers contemporary essays on these themes.*`,
     tags: ["process philosophy", "ethics", "AI", "ontology"],
     readTime: 7,
+    capybaraImage: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663028356061/NELaPJvkAhvvVskF.png",
   },
   {
     id: "tech-005",
@@ -3193,6 +3194,7 @@ In the quiet act of naming a type, we participate in a timeless human story — 
 `,
     tags: ["type-systems", "ontology", "philosophy", "ecology"],
     readTime: 7,
+    capybaraImage: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663028356061/UBYtykQSrOHrlJVQ.png",
   },
   {
     id: "nature-005",
@@ -3245,6 +3247,7 @@ References:
 Tags: ["microbiome", "identity", "intelligence", "ethics"]`,
     tags: ["microbiome", "identity", "intelligence", "ethics"],
     readTime: 7,
+    capybaraImage: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663028356061/wzxMyWadWTmyZvKS.png",
   },
   {
     id: "ml-005",
@@ -3302,6 +3305,7 @@ For further reading:
 Recent media discussions around AI ethics and alignment also echo these themes, emphasizing that intelligence divorced from embodiment risks misalignment with human values — a point that was highlighted in the 2026 World AI Summit panel held in São Paulo.`,
     tags: ["machine-learning", "AI", "embodied-cognition", "philosophy"],
     readTime: 8,
+    capybaraImage: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663028356061/clKWnBpfECxDwTQc.png",
   },
   {
     id: "games-005",
@@ -3350,5 +3354,6 @@ For more on the philosophical dimensions of games and choice, see [Jesper Juul's
 `,
     tags: ["games", "narrative", "ethics", "player-choice"],
     readTime: 7,
+    capybaraImage: "https://files.manuscdn.com/user_upload_by_module/session_file/310419663028356061/UWTNEpDtXLNYfczC.png",
   },
 ];
