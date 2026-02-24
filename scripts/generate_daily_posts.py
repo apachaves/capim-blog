@@ -256,6 +256,70 @@ OUTPUT FORMAT: Respond with ONLY a valid JSON object (no markdown wrapper, no ex
 
 # ── Step 3: Generate capybara image ───────────────────────────────────────────
 
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+GITHUB_REPO = os.environ.get("GITHUB_REPOSITORY", "apachaves/capim-blog")
+
+
+def upload_to_github_releases(img_path: Path, category: str) -> str | None:
+    """
+    Upload an image to GitHub Releases as a binary asset.
+    Returns the CDN URL (github.com releases download URL) or None.
+    Requires GITHUB_TOKEN env var.
+    """
+    if not GITHUB_TOKEN:
+        return None
+
+    tag = f"capybara-images-{TODAY}"
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json",
+    }
+
+    # Check if release already exists for today
+    releases_url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/tags/{tag}"
+    r = requests.get(releases_url, headers=headers, timeout=30)
+    if r.status_code == 200:
+        release_id = r.json()["id"]
+        upload_url = r.json()["upload_url"].split("{?")[0]
+    else:
+        # Create a new release
+        create_url = f"https://api.github.com/repos/{GITHUB_REPO}/releases"
+        payload = {
+            "tag_name": tag,
+            "name": f"Capybara Images — {TODAY}",
+            "body": f"Auto-generated capybara illustrations for {TODAY}",
+            "draft": False,
+            "prerelease": False,
+        }
+        r = requests.post(create_url, headers=headers, json=payload, timeout=30)
+        if r.status_code not in (200, 201):
+            print(f"  ✗ Could not create GitHub release: {r.status_code} {r.text[:200]}")
+            return None
+        release_id = r.json()["id"]
+        upload_url = r.json()["upload_url"].split("{?")[0]
+
+    # Upload the image asset
+    asset_name = img_path.name
+    upload_headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Content-Type": "image/png",
+    }
+    with open(img_path, "rb") as f:
+        r = requests.post(
+            f"{upload_url}?name={asset_name}",
+            headers=upload_headers,
+            data=f,
+            timeout=120,
+        )
+    if r.status_code in (200, 201):
+        cdn_url = r.json()["browser_download_url"]
+        print(f"  ✓ GitHub Releases CDN URL: {cdn_url}")
+        return cdn_url
+    else:
+        print(f"  ✗ GitHub asset upload failed: {r.status_code} {r.text[:200]}")
+        return None
+
+
 def generate_capybara_image(prompt: str, category: str) -> str | None:
     """Generate a capybara illustration and upload to CDN. Returns CDN URL or None."""
     full_prompt = (
@@ -292,19 +356,28 @@ def generate_capybara_image(prompt: str, category: str) -> str | None:
         img_path.write_bytes(img_resp.content)
         print(f"  ✓ Image saved: {img_path.name}")
 
-        # Upload to CDN
-        result = subprocess.run(
-            ["manus-upload-file", str(img_path)],
-            capture_output=True, text=True, timeout=300,
-        )
-        output = result.stdout + result.stderr
-        match = re.search(r"CDN URL: (https://\S+)", output)
-        if match:
-            cdn_url = match.group(1)
-            print(f"  ✓ CDN URL: {cdn_url}")
-            return cdn_url
+        # Upload to CDN — try manus-upload-file first (Manus sandbox),
+        # fall back to GitHub Releases (CI / GitHub Actions)
+        cdn_url = None
+        manus_tool = subprocess.run(["which", "manus-upload-file"], capture_output=True)
+        if manus_tool.returncode == 0:
+            result = subprocess.run(
+                ["manus-upload-file", str(img_path)],
+                capture_output=True, text=True, timeout=300,
+            )
+            output = result.stdout + result.stderr
+            match = re.search(r"CDN URL: (https://\S+)", output)
+            if match:
+                cdn_url = match.group(1)
+                print(f"  ✓ Manus CDN URL: {cdn_url}")
+            else:
+                print(f"  ✗ manus-upload-file failed: {output[:300]}")
         else:
-            print(f"  ✗ Upload failed: {output[:300]}")
+            print("  → manus-upload-file not available, trying GitHub Releases...")
+            cdn_url = upload_to_github_releases(img_path, category)
+
+        if cdn_url:
+            return cdn_url
     except Exception as e:
         print(f"  ✗ Image generation/upload failed: {e}")
     return None
