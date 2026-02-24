@@ -1,5 +1,5 @@
 {
-  "name": "personal-journal-blog",
+  "name": "capim-blog",
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
@@ -95,6 +95,10 @@
     },
     "overrides": {
       "tailwindcss>nanoid": "3.3.7"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
+      "esbuild"
+    ]
   }
 }
